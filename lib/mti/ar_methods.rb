@@ -20,6 +20,18 @@ module MTI::ARMethods
 
   # Class methods for all MTI related classes
   module ClassMethods
+    
+    # Overwrites AR::Base#descends_from_active_record?
+    # 
+    # True if this isn't a concrete subclass needing a STI / MTI type condition.
+    def descends_from_active_record?
+      if superclass.abstract_class?
+        superclass.descends_from_active_record?
+      else
+        [ActiveRecord::Base, ActiveRecord::MTI].include?(superclass) || !columns_hash.include?(inheritance_column)
+      end
+    end
+    
     protected
       # Overwrites AR::Base#class_of_active_record_descendant
       # 
