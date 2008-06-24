@@ -84,7 +84,7 @@ module MTI::ARMethods
 
       # Reload with proper class if necessary
       found = super(*args)
-      found = found.class.find(*args) if found.class.base_class == self
+      found = found.class.find(*args) if found.class.is_a?(ActiveRecord::Base) && found.class.base_class == self
       found
     end
   end
