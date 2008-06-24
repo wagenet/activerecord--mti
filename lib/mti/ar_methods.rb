@@ -61,9 +61,15 @@ module MTI::ARMethods
     end
 =end
     
-    # Overwrites ActiveRecord::Base#find to optionally limit the results by subclass.
-    # Doing so enables fields in the subclass table to be accessed. Otherwise it 
-    # behaves identically to it's original.
+    # Overwrites ActiveRecord::Base#find with two helps:
+    # 1. Optionally limit the results by subclass
+    # Example:
+    # 
+    #   Person.find(:first, :subclass => :employee)
+    #   # Equivalent to
+    #   Employee.find(:first)
+    # 
+    # 2. If it finds a subclass, reload to get additional variables
     def find(*args)
       if self.superclass == ActiveRecord::MTI
         options = args.extract_options!
@@ -76,7 +82,10 @@ module MTI::ARMethods
         args << options
       end
 
-      super(*args)
+      # Reload with proper class if necessary
+      found = super(*args)
+      found = found.class.find(*args) if found.class.base_class == self
+      found
     end
   end
 
