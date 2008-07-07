@@ -9,8 +9,6 @@
 class ActiveRecord::MTI < ActiveRecord::Base
   def self.inherited(subclass) #:nodoc:
     super
-    subclass.class_eval do
-      include MTI::ARMethods
-    end
+    subclass.send(:include, ::MTI::ARMethods)
   end
 end
