@@ -84,6 +84,7 @@ module MTI::ARMethods
 
       # Reload with proper class if necessary
       found = super(*args)
+      # This code might have issues
       found = found.class.find(*args) if found.is_a?(ActiveRecord::Base) && found.class.base_class == self
       found
     end
@@ -126,7 +127,7 @@ module MTI::ARMethods
     #     set_mti_primary_key "person_id"
     #   end
     def mti_primary_key
-      key = Inflector.foreign_key(base_class.name)
+      key = ActiveSupport::Inflector.foreign_key(base_class.name)
       set_mti_primary_key(key)
       key
     end
@@ -255,6 +256,23 @@ module MTI::ARMethods
       result = yield self if block_given?
       callback(:after_initialize) if respond_to_without_attributes?(:after_initialize)
       result
+    end
+    
+    # Returns the contents of the record as a nicely formatted string.
+    def inspect
+      attributes_as_nice_string = self.class.column_names.collect { |name|
+        if has_attribute?(name) || new_record?
+          "#{name}: #{attribute_for_inspect(name)}"
+        end
+      }.compact.join(", ")
+      
+      mti_attributes_as_nice_string = self.class.mti_column_names.collect { |name|
+        if has_attribute?(name) || new_record?
+          "#{name}: #{attribute_for_inspect(name)}"
+        end
+      }.compact.join(", ")
+      
+      "#<#{self.class} #{attributes_as_nice_string}, #{mti_attributes_as_nice_string}>"
     end
 
     # Initializes the attributes array with keys matching the columns from the mti subclass table 
